@@ -9,8 +9,10 @@ import { globalStore } from '@/state/stores/global-store';
 import { playerStore } from '@/state/stores/player-store';
 import { ConnectionsView } from '@/views/connections-view';
 import { CreateProfileView } from '@/views/create-profile-view';
+import { FinalResultsView } from '@/views/final-results-view';
 import { GameLobbyView } from '@/views/game-lobby-view';
-import { SharedStateView } from '@/views/shared-state-view';
+import { PuzzleGameView } from '@/views/puzzle-game-view';
+import { RoundResultsView } from '@/views/round-results-view';
 import { KmModalProvider } from '@kokimoki/shared';
 import * as React from 'react';
 import { useSnapshot } from 'valtio';
@@ -18,19 +20,25 @@ import { useSnapshot } from 'valtio';
 const App: React.FC = () => {
 	const { title } = config;
 	const { name, currentView } = useSnapshot(playerStore.proxy);
-	const { started } = useSnapshot(globalStore.proxy);
+	const { started, gamePhase } = useSnapshot(globalStore.proxy);
 
 	useGlobalController();
 	useDocumentTitle(title);
 
 	React.useEffect(() => {
-		// While game start, force view to 'shared-state', otherwise to 'lobby'
+		// Route based on game phase
 		if (started) {
-			playerActions.setCurrentView('shared-state');
+			if (gamePhase === 'playing') {
+				playerActions.setCurrentView('puzzle');
+			} else if (gamePhase === 'roundResults') {
+				playerActions.setCurrentView('roundResults');
+			} else if (gamePhase === 'finalResults') {
+				playerActions.setCurrentView('finalResults');
+			}
 		} else {
 			playerActions.setCurrentView('lobby');
 		}
-	}, [started]);
+	}, [started, gamePhase]);
 
 	if (!name) {
 		return (
@@ -69,8 +77,9 @@ const App: React.FC = () => {
 			<PlayerLayout.Header />
 
 			<PlayerLayout.Main>
-				{currentView === 'shared-state' && <SharedStateView />}
-				{/* Add new views here */}
+				{currentView === 'puzzle' && <PuzzleGameView />}
+				{currentView === 'roundResults' && <RoundResultsView />}
+				{currentView === 'finalResults' && <FinalResultsView />}
 			</PlayerLayout.Main>
 
 			<PlayerLayout.Footer>

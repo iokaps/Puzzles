@@ -32,7 +32,7 @@ theme:
   depth: '1'
 
 # Translations
-title: 'Host Starter'
+title: 'Puzzle Game'
 
 gameLobbyMd: |
   # Waiting for game to start...
@@ -46,8 +46,10 @@ sharedStateMd: |
 
 players: 'Players'
 timeElapsed: 'Time elapsed'
+timeRemaining: 'Time Remaining'
 startButton: 'Start Game'
 stopButton: 'Stop Game'
+resetButton: 'Reset Game'
 
 loading: 'Loading...'
 
@@ -68,3 +70,56 @@ playerLinkLabel: 'Player Link'
 presenterLinkLabel: 'Presenter Link'
 
 menuAriaLabel: 'Open menu drawer'
+
+# Puzzle game specific
+puzzleInstructions: 'Drag and rotate pieces to match the shape above'
+rotateButton: 'Rotate'
+flipHorizontalButton: 'Flip Horizontal'
+flipVerticalButton: 'Flip Vertical'
+submitButton: 'Submit Solution'
+puzzleCompleteMessage: 'Puzzle complete! Well done!'
+puzzleIncorrectMessage: 'Puzzle is not correct yet. Keep trying!'
+
+# Game settings
+gameSettings: 'Game Settings'
+numberOfRounds: 'Number of Rounds'
+rounds: 'Rounds'
+round: 'Round'
+of: 'of'
+startingDifficulty: 'Starting Difficulty'
+easy: 'Easy (3 pieces)'
+medium: 'Medium (4 pieces)'
+hard: 'Hard (5 pieces)'
+
+# Game status
+gameStatus: 'Game Status'
+phase: 'Phase'
+difficulty: 'Difficulty'
+playerProgress: 'Player Progress'
+playerName: 'Player Name'
+status: 'Status'
+online: 'Online'
+offline: 'Offline'
+completed: 'Completed'
+playing: 'Playing'
+
+# Scoring
+points: 'points'
+totalScore: 'Total Score'
+roundScore: 'Round Score'
+rank: 'Rank'
+
+# Results
+roundResultsTitle: 'Round Results'
+finalResultsTitle: 'Final Results'
+roundWinner: 'Round Winner'
+congratulations: 'Congratulations!'
+fullLeaderboard: 'Full Leaderboard'
+gameComplete: 'Game Complete'
+nextRoundStarting: 'Next round starting...'
+viewingFinalResults: 'Viewing final results'
+
+# Presenter
+joinGameTitle: 'Join the Game!'
+scanToJoin: 'Scan QR code to join'
+leaderboard: 'Leaderboard'

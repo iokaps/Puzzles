@@ -1,4 +1,5 @@
 import { kmClient } from '@/services/km-client';
+import { globalActions } from '@/state/actions/global-actions';
 import { globalStore } from '@/state/stores/global-store';
 import { useEffect } from 'react';
 import { useSnapshot } from 'valtio';
@@ -35,10 +36,44 @@ export function useGlobalController() {
 			return;
 		}
 
-		// Global controller-specific logic goes here
-		// For example, a time-based event that modifies the global state
-		// All global controller logic does not need to be time-based
+		const handleRoundLogic = async () => {
+			const {
+				gamePhase,
+				roundStartTime,
+				roundDuration,
+				currentRound,
+				totalRounds
+			} = globalStore.proxy;
+
+			// Auto-end round when time expires
+			if (gamePhase === 'playing') {
+				const elapsed = serverTime - roundStartTime;
+				if (elapsed >= roundDuration) {
+					await globalActions.endRound();
+				}
+			}
+		};
+
+		handleRoundLogic().catch(console.error);
 	}, [isGlobalController, serverTime]);
+
+	// Auto-advance from round results to next round
+	useEffect(() => {
+		if (!isGlobalController) {
+			return;
+		}
+
+		const { gamePhase } = globalStore.proxy;
+
+		if (gamePhase === 'roundResults') {
+			// Wait 10 seconds before advancing
+			const timer = setTimeout(() => {
+				globalActions.nextRound().catch(console.error);
+			}, 10000);
+
+			return () => clearTimeout(timer);
+		}
+	}, [isGlobalController, globalStore.proxy.gamePhase]);
 
 	return isGlobalController;
 }
