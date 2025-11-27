@@ -4,337 +4,427 @@ export interface PuzzlePieceDefinition {
 	correctX: number; // correct position in solution
 	correctY: number;
 	correctRotation: number; // 0, 90, 180, or 270
-	correctFlipH: boolean;
-	correctFlipV: boolean;
+	color: string;
+	width?: number; // bounding box width (default 30)
+	height?: number; // bounding box height (default 30)
 }
 
 export interface PuzzleDefinition {
 	id: string;
-	difficulty: 'easy' | 'medium' | 'hard';
+	difficulty: 'easy' | 'medium' | 'hard' | 'expert';
 	pieceCount: number;
 	targetShape: string; // SVG path of complete puzzle outline
 	pieces: PuzzlePieceDefinition[];
 	viewBox: { width: number; height: number };
 }
 
-// Easy: 3-piece rectangle (3 horizontal bars stacked)
+// Easy: The Pyramid (4 pieces)
 const EASY_PUZZLE_1: PuzzleDefinition = {
-	id: 'easy-rectangle-1',
+	id: 'easy-pyramid',
 	difficulty: 'easy',
-	pieceCount: 3,
-	targetShape: 'M 30 30 L 120 30 L 120 120 L 30 120 Z', // 3x3 grid square
-	viewBox: { width: 150, height: 150 },
+	pieceCount: 4,
+	targetShape:
+		'M 60 30 L 90 30 L 90 60 L 120 60 L 120 90 L 30 90 L 30 60 L 60 60 Z',
+	viewBox: { width: 150, height: 300 },
 	pieces: [
 		{
 			id: 'piece-1',
-			path: 'M 0 0 L 90 0 L 90 30 L 0 30 Z', // 3x1 horizontal bar
-			correctX: 30,
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
 			correctY: 30,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#ef4444' // Red
 		},
 		{
 			id: 'piece-2',
-			path: 'M 0 0 L 90 0 L 90 30 L 0 30 Z', // 3x1 horizontal bar
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
 			correctX: 30,
 			correctY: 60,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#22c55e' // Green
 		},
 		{
 			id: 'piece-3',
-			path: 'M 0 0 L 90 0 L 90 30 L 0 30 Z', // 3x1 horizontal bar
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#3b82f6' // Blue
+		},
+		{
+			id: 'piece-4',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 90,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#f59e0b' // Amber
+		}
+	]
+};
+
+// Easy: The Corner (3 pieces)
+const EASY_PUZZLE_2: PuzzleDefinition = {
+	id: 'easy-corner',
+	difficulty: 'easy',
+	pieceCount: 3,
+	targetShape: 'M 30 30 L 90 30 L 90 60 L 60 60 L 60 90 L 30 90 Z',
+	viewBox: { width: 150, height: 300 },
+	pieces: [
+		{
+			id: 'piece-1',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 30,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#f59e0b' // Amber
+		},
+		{
+			id: 'piece-2',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#8b5cf6' // Violet
+		},
+		{
+			id: 'piece-3',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 30,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#ec4899' // Pink
+		}
+	]
+};
+
+// Medium: The Big T (5 pieces)
+const MEDIUM_PUZZLE_1: PuzzleDefinition = {
+	id: 'medium-big-t',
+	difficulty: 'medium',
+	pieceCount: 5,
+	targetShape:
+		'M 30 30 L 120 30 L 120 60 L 90 60 L 90 120 L 60 120 L 60 60 L 30 60 Z',
+	viewBox: { width: 150, height: 350 },
+	pieces: [
+		{
+			id: 'piece-1',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 30,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#ef4444'
+		},
+		{
+			id: 'piece-2',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#3b82f6'
+		},
+		{
+			id: 'piece-3',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 90,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#22c55e'
+		},
+		{
+			id: 'piece-4',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#f59e0b'
+		},
+		{
+			id: 'piece-5',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 90,
+			correctRotation: 0,
+			color: '#8b5cf6'
+		}
+	]
+};
+
+// Medium: The Stairs (5 pieces)
+const MEDIUM_PUZZLE_2: PuzzleDefinition = {
+	id: 'medium-stairs',
+	difficulty: 'medium',
+	pieceCount: 5,
+	targetShape:
+		'M 30 30 L 90 30 L 90 60 L 120 60 L 120 120 L 90 120 L 90 90 L 60 90 L 60 60 L 30 60 Z',
+	viewBox: { width: 150, height: 350 },
+	pieces: [
+		{
+			id: 'piece-1',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 30,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#8b5cf6'
+		},
+		{
+			id: 'piece-2',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#ec4899'
+		},
+		{
+			id: 'piece-3',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#06b6d4'
+		},
+		{
+			id: 'piece-4',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 90,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#f97316'
+		},
+		{
+			id: 'piece-5',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 90,
+			correctY: 90,
+			correctRotation: 0,
+			color: '#ef4444'
+		}
+	]
+};
+
+// Hard: The Big U (7 pieces)
+const HARD_PUZZLE_1: PuzzleDefinition = {
+	id: 'hard-big-u',
+	difficulty: 'hard',
+	pieceCount: 7,
+	targetShape:
+		'M 30 30 L 60 30 L 60 90 L 90 90 L 90 30 L 120 30 L 120 120 L 30 120 Z',
+	viewBox: { width: 150, height: 400 },
+	pieces: [
+		{
+			id: 'piece-1',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
 			correctX: 30,
 			correctY: 90,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		}
-	]
-};
-
-// Easy: 3-piece L-shape (rotation required)
-const EASY_PUZZLE_2: PuzzleDefinition = {
-	id: 'easy-lshape-1',
-	difficulty: 'easy',
-	pieceCount: 3,
-	targetShape: 'M 30 30 L 90 30 L 90 60 L 60 60 L 60 120 L 30 120 Z', // L-shape
-	viewBox: { width: 150, height: 150 },
-	pieces: [
-		{
-			id: 'piece-1',
-			path: 'M 0 0 L 60 0 L 60 30 L 0 30 Z', // 2x1 horizontal (top of L)
-			correctX: 30,
-			correctY: 30,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#ef4444'
 		},
 		{
 			id: 'piece-2',
-			path: 'M 0 0 L 30 0 L 30 60 L 0 60 Z', // 1x2 vertical (bottom of L)
-			correctX: 30,
-			correctY: 60,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-3',
-			path: 'M 0 0 L 60 0 L 60 30 L 0 30 Z', // 2x1 horizontal - NEEDS 90° ROTATION to fill corner
-			correctX: 30,
-			correctY: 60,
-			correctRotation: 90,
-			correctFlipH: false,
-			correctFlipV: false
-		}
-	]
-};
-
-// Easy: 3-piece square (3 vertical bars side by side)
-const EASY_PUZZLE_3: PuzzleDefinition = {
-	id: 'easy-square-1',
-	difficulty: 'easy',
-	pieceCount: 3,
-	targetShape: 'M 30 30 L 120 30 L 120 120 L 30 120 Z', // 3x3 grid square
-	viewBox: { width: 150, height: 150 },
-	pieces: [
-		{
-			id: 'piece-1',
-			path: 'M 0 0 L 30 0 L 30 90 L 0 90 Z', // 1x3 vertical bar
-			correctX: 30,
-			correctY: 30,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-2',
-			path: 'M 0 0 L 30 0 L 30 90 L 0 90 Z', // 1x3 vertical bar
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
 			correctX: 60,
-			correctY: 30,
+			correctY: 90,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#3b82f6'
 		},
 		{
 			id: 'piece-3',
-			path: 'M 0 0 L 30 0 L 30 90 L 0 90 Z', // 1x3 vertical bar
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
 			correctX: 90,
-			correctY: 30,
+			correctY: 90,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		}
-	]
-};
-
-// Medium: 4-piece square (2x2 grid of equal squares)
-const MEDIUM_PUZZLE_1: PuzzleDefinition = {
-	id: 'medium-square-1',
-	difficulty: 'medium',
-	pieceCount: 4,
-	targetShape: 'M 30 30 L 90 30 L 90 90 L 30 90 Z', // 2x2 grid square
-	viewBox: { width: 120, height: 120 },
-	pieces: [
-		{
-			id: 'piece-1',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // top-left
-			correctX: 30,
-			correctY: 30,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-2',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // top-right
-			correctX: 60,
-			correctY: 30,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-3',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // bottom-left
-			correctX: 30,
-			correctY: 60,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#22c55e'
 		},
 		{
 			id: 'piece-4',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // bottom-right
-			correctX: 60,
-			correctY: 60,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		}
-	]
-};
-
-// Medium: 4-piece T-shape (rotation required)
-const MEDIUM_PUZZLE_2: PuzzleDefinition = {
-	id: 'medium-tshape-1',
-	difficulty: 'medium',
-	pieceCount: 4,
-	targetShape:
-		'M 30 30 L 120 30 L 120 60 L 90 60 L 90 90 L 60 90 L 60 60 L 30 60 Z', // T-shape
-	viewBox: { width: 150, height: 120 },
-	pieces: [
-		{
-			id: 'piece-1',
-			path: 'M 0 0 L 90 0 L 90 30 L 0 30 Z', // 3x1 horizontal (top of T)
-			correctX: 30,
-			correctY: 30,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-2',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1 square
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
 			correctX: 30,
 			correctY: 60,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-3',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1 square
-			correctX: 60,
-			correctY: 60,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-4',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1 square
-			correctX: 90,
-			correctY: 60,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		}
-	]
-};
-
-// Hard: 5-piece cross
-const HARD_PUZZLE_1: PuzzleDefinition = {
-	id: 'hard-cross-1',
-	difficulty: 'hard',
-	pieceCount: 5,
-	targetShape:
-		'M 45 15 L 75 15 L 75 45 L 105 45 L 105 75 L 75 75 L 75 105 L 45 105 L 45 75 L 15 75 L 15 45 L 45 45 Z',
-	viewBox: { width: 120, height: 120 },
-	pieces: [
-		{
-			id: 'piece-1',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // center
-			correctX: 45,
-			correctY: 45,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-2',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // top
-			correctX: 45,
-			correctY: 15,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-3',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // right
-			correctX: 75,
-			correctY: 45,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-4',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // bottom
-			correctX: 45,
-			correctY: 75,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#f59e0b'
 		},
 		{
 			id: 'piece-5',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // left
-			correctX: 15,
-			correctY: 45,
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 30,
+			correctY: 30,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#8b5cf6'
+		},
+		{
+			id: 'piece-6',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 90,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#ec4899'
+		},
+		{
+			id: 'piece-7',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 90,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#06b6d4'
 		}
 	]
 };
 
-// Hard: 5-piece rectangle (rotation required)
+// Hard: The Long Cross (6 pieces)
 const HARD_PUZZLE_2: PuzzleDefinition = {
-	id: 'hard-rectangle-1',
+	id: 'hard-long-cross',
 	difficulty: 'hard',
-	pieceCount: 5,
-	targetShape: 'M 30 30 L 120 30 L 120 90 L 30 90 Z',
-	viewBox: { width: 150, height: 120 },
+	pieceCount: 6,
+	targetShape:
+		'M 60 30 L 90 30 L 90 90 L 120 90 L 120 120 L 90 120 L 90 150 L 60 150 L 60 120 L 30 120 L 30 90 L 60 90 Z',
+	viewBox: { width: 150, height: 400 },
 	pieces: [
 		{
 			id: 'piece-1',
-			path: 'M 0 0 L 60 0 L 60 30 L 0 30 Z', // 2x1 horizontal
-			correctX: 30,
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
 			correctY: 30,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#ec4899'
 		},
 		{
 			id: 'piece-2',
-			path: 'M 0 0 L 60 0 L 60 30 L 0 30 Z', // 2x1 horizontal
-			correctX: 30,
-			correctY: 60,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-3',
-			path: 'M 0 0 L 30 0 L 30 60 L 0 60 Z', // 1x2 vertical NEEDS 90° ROTATION
-			correctX: 90,
-			correctY: 30,
-			correctRotation: 90,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-4',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1 square
-			correctX: 30,
-			correctY: 30,
-			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
-		},
-		{
-			id: 'piece-5',
-			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1 square
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
 			correctX: 60,
 			correctY: 60,
 			correctRotation: 0,
-			correctFlipH: false,
-			correctFlipV: false
+			color: '#06b6d4'
+		},
+		{
+			id: 'piece-3',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 90,
+			correctRotation: 0,
+			color: '#f43f5e'
+		},
+		{
+			id: 'piece-4',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 60,
+			correctY: 120,
+			correctRotation: 0,
+			color: '#84cc16'
+		},
+		{
+			id: 'piece-5',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 30,
+			correctY: 90,
+			correctRotation: 0,
+			color: '#f97316'
+		},
+		{
+			id: 'piece-6',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z', // 1x1
+			correctX: 90,
+			correctY: 90,
+			correctRotation: 0,
+			color: '#ef4444'
+		}
+	]
+};
+
+// Expert: The 3x3 Box (3 pieces)
+const EXPERT_PUZZLE_1: PuzzleDefinition = {
+	id: 'expert-box',
+	difficulty: 'expert',
+	pieceCount: 3,
+	targetShape: 'M 30 30 L 120 30 L 120 120 L 30 120 Z',
+	viewBox: { width: 150, height: 450 },
+	pieces: [
+		// 3x1 Bar
+		{
+			id: 'p1',
+			path: 'M 0 0 L 90 0 L 90 30 L 0 30 Z',
+			correctX: 30,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#ef4444',
+			width: 90,
+			height: 30
+		},
+		// 1x2 Bar
+		{
+			id: 'p2',
+			path: 'M 0 0 L 30 0 L 30 60 L 0 60 Z',
+			correctX: 30,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#22c55e',
+			width: 30,
+			height: 60
+		},
+		// 2x2 Square
+		{
+			id: 'p3',
+			path: 'M 0 0 L 60 0 L 60 60 L 0 60 Z',
+			correctX: 60,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#3b82f6',
+			width: 60,
+			height: 60
+		}
+	]
+};
+
+// Expert: The Steps (4 pieces)
+const EXPERT_PUZZLE_2: PuzzleDefinition = {
+	id: 'expert-steps',
+	difficulty: 'expert',
+	pieceCount: 4,
+	targetShape:
+		'M 30 30 L 60 30 L 60 60 L 90 60 L 90 90 L 120 90 L 120 120 L 150 120 L 150 150 L 30 150 Z',
+	viewBox: { width: 180, height: 450 },
+	pieces: [
+		// 1x4 Bar
+		{
+			id: 'p1',
+			path: 'M 0 0 L 30 0 L 30 120 L 0 120 Z',
+			correctX: 30,
+			correctY: 30,
+			correctRotation: 0,
+			color: '#ef4444',
+			width: 30,
+			height: 120
+		},
+		// 1x3 Bar
+		{
+			id: 'p2',
+			path: 'M 0 0 L 30 0 L 30 90 L 0 90 Z',
+			correctX: 60,
+			correctY: 60,
+			correctRotation: 0,
+			color: '#f97316',
+			width: 30,
+			height: 90
+		},
+		// 1x2 Bar
+		{
+			id: 'p3',
+			path: 'M 0 0 L 30 0 L 30 60 L 0 60 Z',
+			correctX: 90,
+			correctY: 90,
+			correctRotation: 0,
+			color: '#f59e0b',
+			width: 30,
+			height: 60
+		},
+		// 1x1 Block
+		{
+			id: 'p4',
+			path: 'M 0 0 L 30 0 L 30 30 L 0 30 Z',
+			correctX: 120,
+			correctY: 120,
+			correctRotation: 0,
+			color: '#84cc16',
+			width: 30,
+			height: 30
 		}
 	]
 };
@@ -342,11 +432,12 @@ const HARD_PUZZLE_2: PuzzleDefinition = {
 const allPuzzles: PuzzleDefinition[] = [
 	EASY_PUZZLE_1,
 	EASY_PUZZLE_2,
-	EASY_PUZZLE_3,
 	MEDIUM_PUZZLE_1,
 	MEDIUM_PUZZLE_2,
 	HARD_PUZZLE_1,
-	HARD_PUZZLE_2
+	HARD_PUZZLE_2,
+	EXPERT_PUZZLE_1,
+	EXPERT_PUZZLE_2
 ];
 
 export function getPuzzleById(id: string): PuzzleDefinition | undefined {
@@ -354,7 +445,7 @@ export function getPuzzleById(id: string): PuzzleDefinition | undefined {
 }
 
 export function getPuzzleByDifficulty(
-	difficulty: 'easy' | 'medium' | 'hard',
+	difficulty: 'easy' | 'medium' | 'hard' | 'expert',
 	usedPuzzleIds: string[]
 ): PuzzleDefinition {
 	const availablePuzzles = allPuzzles.filter(

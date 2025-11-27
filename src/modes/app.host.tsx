@@ -152,6 +152,7 @@ const App: React.FC = () => {
 									<option value="easy">{config.easy}</option>
 									<option value="medium">{config.medium}</option>
 									<option value="hard">{config.hard}</option>
+									<option value="expert">{config.expert}</option>
 								</select>
 							</div>
 

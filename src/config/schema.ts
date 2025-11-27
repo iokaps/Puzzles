@@ -43,13 +43,6 @@ export const schema = z.object({
 		.string()
 		.default('Drag and rotate pieces to match the shape above'),
 	rotateButton: z.string().default('Rotate'),
-	flipHorizontalButton: z.string().default('Flip Horizontal'),
-	flipVerticalButton: z.string().default('Flip Vertical'),
-	submitButton: z.string().default('Submit Solution'),
-	puzzleCompleteMessage: z.string().default('Puzzle complete! Well done!'),
-	puzzleIncorrectMessage: z
-		.string()
-		.default('Puzzle is not correct yet. Keep trying!'),
 
 	// Game settings
 	gameSettings: z.string().default('Game Settings'),
@@ -61,6 +54,7 @@ export const schema = z.object({
 	easy: z.string().default('Easy (3 pieces)'),
 	medium: z.string().default('Medium (4 pieces)'),
 	hard: z.string().default('Hard (5 pieces)'),
+	expert: z.string().default('Expert (8+ pieces)'),
 
 	// Game status
 	gameStatus: z.string().default('Game Status'),

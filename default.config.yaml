@@ -74,11 +74,6 @@ menuAriaLabel: 'Open menu drawer'
 # Puzzle game specific
 puzzleInstructions: 'Drag and rotate pieces to match the shape above'
 rotateButton: 'Rotate'
-flipHorizontalButton: 'Flip Horizontal'
-flipVerticalButton: 'Flip Vertical'
-submitButton: 'Submit Solution'
-puzzleCompleteMessage: 'Puzzle complete! Well done!'
-puzzleIncorrectMessage: 'Puzzle is not correct yet. Keep trying!'
 
 # Game settings
 gameSettings: 'Game Settings'
@@ -87,9 +82,10 @@ rounds: 'Rounds'
 round: 'Round'
 of: 'of'
 startingDifficulty: 'Starting Difficulty'
-easy: 'Easy (3 pieces)'
-medium: 'Medium (4 pieces)'
-hard: 'Hard (5 pieces)'
+easy: 'Easy (3-4 pieces)'
+medium: 'Medium (5 pieces)'
+hard: 'Hard (6-7 pieces)'
+expert: 'Expert (8+ pieces)'
 
 # Game status
 gameStatus: 'Game Status'

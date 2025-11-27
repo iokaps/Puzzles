@@ -78,7 +78,7 @@ export const globalActions = {
 				globalState.started = false;
 			} else {
 				// Start next round with random difficulty
-				const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
+				const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
 				const randomDifficulty =
 					difficulties[Math.floor(Math.random() * difficulties.length)];
 				const puzzle = getPuzzleByDifficulty(

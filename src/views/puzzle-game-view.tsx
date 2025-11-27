@@ -7,7 +7,6 @@ import { playerActions } from '@/state/actions/player-actions';
 import { globalStore } from '@/state/stores/global-store';
 import { playerStore } from '@/state/stores/player-store';
 import { KmTimeCountdown } from '@kokimoki/shared';
-import { RotateCw } from 'lucide-react';
 
 import * as React from 'react';
 import { useSnapshot } from 'valtio';
@@ -17,7 +16,9 @@ export const PuzzleGameView: React.FC = () => {
 	const { puzzleId, roundStartTime, roundDuration } = useSnapshot(
 		globalStore.proxy
 	);
-	const { pieces } = useSnapshot(playerStore.proxy.puzzleState);
+	const { pieces, currentPuzzleId } = useSnapshot(
+		playerStore.proxy.puzzleState
+	);
 
 	const [draggedPiece, setDraggedPiece] = React.useState<string | null>(null);
 	const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
@@ -26,6 +27,7 @@ export const PuzzleGameView: React.FC = () => {
 		y: number;
 	} | null>(null);
 	const svgRef = React.useRef<SVGSVGElement>(null);
+	const lastTapRef = React.useRef<{ id: string; time: number } | null>(null);
 
 	const puzzle = React.useMemo(() => getPuzzleById(puzzleId), [puzzleId]);
 
@@ -36,10 +38,10 @@ export const PuzzleGameView: React.FC = () => {
 
 	// Initialize puzzle pieces on mount
 	React.useEffect(() => {
-		if (puzzleId && pieces.length === 0) {
+		if (puzzleId && (pieces.length === 0 || currentPuzzleId !== puzzleId)) {
 			playerActions.initializePuzzle(puzzleId);
 		}
-	}, [puzzleId, pieces.length]);
+	}, [puzzleId, pieces.length, currentPuzzleId]);
 
 	// Auto-validate when pieces change position
 	React.useEffect(() => {
@@ -66,6 +68,22 @@ export const PuzzleGameView: React.FC = () => {
 		pieceId: string
 	) => {
 		e.preventDefault();
+
+		// Double-tap detection for rotation
+		const now = Date.now();
+		if (
+			lastTapRef.current &&
+			lastTapRef.current.id === pieceId &&
+			now - lastTapRef.current.time < 300
+		) {
+			handleRotate(pieceId);
+			lastTapRef.current = null;
+			// Add haptic feedback for rotation
+			if (navigator.vibrate) navigator.vibrate(10);
+			return;
+		}
+		lastTapRef.current = { id: pieceId, time: now };
+
 		const svg = svgRef.current;
 		if (!svg) return;
 
@@ -107,12 +125,16 @@ export const PuzzleGameView: React.FC = () => {
 
 	const handlePointerEnd = () => {
 		if (draggedPiece && localPiecePosition) {
+			// Snap to grid (30px)
+			const GRID_SIZE = 30;
+			const snappedX = Math.round(localPiecePosition.x / GRID_SIZE) * GRID_SIZE;
+			const snappedY = Math.round(localPiecePosition.y / GRID_SIZE) * GRID_SIZE;
+
 			// Save final position to store
-			playerActions.updatePiecePosition(
-				draggedPiece,
-				localPiecePosition.x,
-				localPiecePosition.y
-			);
+			playerActions.updatePiecePosition(draggedPiece, snappedX, snappedY);
+
+			// Haptic feedback on drop
+			if (navigator.vibrate) navigator.vibrate(20);
 		}
 		setDraggedPiece(null);
 		setLocalPiecePosition(null);
@@ -131,17 +153,20 @@ export const PuzzleGameView: React.FC = () => {
 	}
 
 	return (
-		<div className="flex h-full w-full flex-col gap-4">
-			{/* Timer */}
-			<div className="text-center">
-				<div className="text-lg font-bold">{config.timeRemaining}</div>
-				<div className="font-mono text-2xl">
+		<div className="flex h-full w-full flex-col gap-2">
+			{/* Header Info */}
+			<div className="flex items-center justify-between px-2">
+				<div className="text-sm text-gray-600">
+					{config.puzzleInstructions} (Double-tap to rotate)
+				</div>
+				<div className="flex items-center gap-2 font-mono font-bold">
+					<span className="text-xs text-gray-500">{config.timeRemaining}:</span>
 					<KmTimeCountdown ms={remainingTime} />
 				</div>
 			</div>
 
 			{/* SVG Canvas */}
-			<div className="flex-1 overflow-hidden">
+			<div className="flex-1 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner">
 				<svg
 					ref={svgRef}
 					viewBox={`0 0 ${puzzle.viewBox.width} ${puzzle.viewBox.height}`}
@@ -165,115 +190,128 @@ export const PuzzleGameView: React.FC = () => {
 								strokeWidth="1"
 							/>
 						</pattern>
+						<filter id="shadow">
+							<feDropShadow dx="3" dy="3" stdDeviation="3" floodOpacity="0.3" />
+						</filter>
+						<filter id="inner-shadow">
+							<feOffset dx="2" dy="2" />
+							<feGaussianBlur stdDeviation="2" result="offset-blur" />
+							<feComposite
+								operator="out"
+								in="SourceGraphic"
+								in2="offset-blur"
+								result="inverse"
+							/>
+							<feFlood floodColor="black" floodOpacity="0.2" result="color" />
+							<feComposite
+								operator="in"
+								in="color"
+								in2="inverse"
+								result="shadow"
+							/>
+							<feComposite operator="over" in="shadow" in2="SourceGraphic" />
+						</filter>
 					</defs>
 					<rect width="100%" height="100%" fill="url(#grid)" />
 
-					{/* Target shape outline */}
+					{/* Target shape outline - Recessed look */}
 					<path
 						d={puzzle.targetShape}
-						fill="none"
-						stroke="#3b82f6"
-						strokeWidth="3"
-						strokeDasharray="8,4"
-						opacity="0.7"
+						fill="rgba(0,0,0,0.05)"
+						stroke="#cbd5e1"
+						strokeWidth="2"
+						filter="url(#inner-shadow)"
 					/>
 
 					{/* Puzzle pieces */}
-					{pieces.map((piece, index) => {
-						const pieceDef = puzzle.pieces.find(
-							(p: { id: string }) => p.id === piece.id
-						);
-						if (!pieceDef) return null;
+					{[...pieces]
+						.sort((a, b) =>
+							a.id === draggedPiece ? 1 : b.id === draggedPiece ? -1 : 0
+						)
+						.map((piece) => {
+							const pieceDef = puzzle.pieces.find(
+								(p: { id: string }) => p.id === piece.id
+							);
+							if (!pieceDef) return null;
+							const index = puzzle.pieces.findIndex((p) => p.id === piece.id);
 
-						// Use local position during drag, store position otherwise
-						const isDragging = draggedPiece === piece.id;
-						const displayX =
-							isDragging && localPiecePosition ? localPiecePosition.x : piece.x;
-						const displayY =
-							isDragging && localPiecePosition ? localPiecePosition.y : piece.y;
-						const transform = `translate(${displayX}, ${displayY}) rotate(${piece.rotation}) scale(${piece.flipH ? -1 : 1}, ${piece.flipV ? -1 : 1})`;
-						const pieceNumber = index + 1;
-						return (
-							<g
-								key={piece.id}
-								onPointerDown={(e) => handlePointerStart(e, piece.id)}
-								style={{
-									cursor: draggedPiece === piece.id ? 'grabbing' : 'grab'
-								}}
-							>
-								<path
-									d={pieceDef.path}
-									fill="#3b82f6"
-									stroke="#1e40af"
-									strokeWidth="2"
+							// Use local position during drag, store position otherwise
+							const isDragging = draggedPiece === piece.id;
+							const displayX =
+								isDragging && localPiecePosition
+									? localPiecePosition.x
+									: piece.x;
+							const displayY =
+								isDragging && localPiecePosition
+									? localPiecePosition.y
+									: piece.y;
+							const transform = `translate(${displayX}, ${displayY}) rotate(${piece.rotation})`;
+							const pieceNumber = index + 1;
+							return (
+								<g
+									key={piece.id}
+									onPointerDown={(e) => handlePointerStart(e, piece.id)}
 									transform={transform}
-									opacity={draggedPiece === piece.id ? 0.7 : 1}
-								/>
-								{/* Show correct position indicator */}
-								<circle
-									cx={pieceDef.correctX}
-									cy={pieceDef.correctY}
-									r="5"
-									fill="rgba(34, 197, 94, 0.3)"
-									stroke="#22c55e"
-									strokeWidth="2"
-									pointerEvents="none"
-								/>
-								<text
-									x={piece.x + 15}
-									y={piece.y + 15}
-									fill="white"
-									fontSize="24"
-									fontWeight="bold"
-									stroke="#1e40af"
-									strokeWidth="1"
-									pointerEvents="none"
-									style={{ userSelect: 'none' }}
+									style={{
+										cursor: draggedPiece === piece.id ? 'grabbing' : 'grab',
+										opacity: draggedPiece === piece.id ? 0.9 : 1,
+										transition:
+											draggedPiece === piece.id
+												? 'none'
+												: 'transform 0.1s ease-out',
+										filter: draggedPiece === piece.id ? 'url(#shadow)' : 'none',
+										zIndex: draggedPiece === piece.id ? 10 : 1
+									}}
 								>
-									{pieceNumber}
-								</text>
-								{/* Rotation indicator */}
-								<text
-									x={piece.x + 15}
-									y={piece.y + 35}
-									fill="#6b7280"
-									fontSize="12"
-									fontWeight="normal"
-									textAnchor="middle"
-									pointerEvents="none"
-									style={{ userSelect: 'none' }}
-								>
-									{piece.rotation}°
-								</text>
-							</g>
-						);
-					})}
+									<path
+										d={pieceDef.path}
+										fill={piece.color || '#3b82f6'}
+										stroke="rgba(0,0,0,0.2)"
+										strokeWidth="1"
+										vectorEffect="non-scaling-stroke"
+									/>
+									{/* Bevel effect highlight */}
+									<path
+										d={pieceDef.path}
+										fill="none"
+										stroke="white"
+										strokeWidth="2"
+										strokeOpacity="0.3"
+										style={{ pointerEvents: 'none' }}
+									/>
+
+									<text
+										x={15}
+										y={20}
+										fill="white"
+										fontSize="16"
+										fontWeight="bold"
+										textAnchor="middle"
+										pointerEvents="none"
+										style={{
+											userSelect: 'none',
+											textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+										}}
+									>
+										{pieceNumber}
+									</text>
+									{/* Rotation indicator */}
+									<text
+										x={15}
+										y={35}
+										fill="rgba(255,255,255,0.8)"
+										fontSize="10"
+										fontWeight="normal"
+										textAnchor="middle"
+										pointerEvents="none"
+										style={{ userSelect: 'none' }}
+									>
+										{piece.rotation}°
+									</text>
+								</g>
+							);
+						})}
 				</svg>
-			</div>
-
-			{/* Controls */}
-			<div className="flex flex-col gap-2 px-4 pb-4">
-				<div className="text-center text-sm text-gray-600">
-					{config.puzzleInstructions}
-				</div>
-
-				{/* Rotation Controls */}
-				<div className="grid grid-cols-3 gap-2">
-					{pieces.map((piece, index) => {
-						const pieceNumber = index + 1;
-						return (
-							<button
-								key={piece.id}
-								onClick={() => handleRotate(piece.id)}
-								className="flex flex-col items-center gap-1 rounded-lg border bg-blue-500 p-2 text-white active:bg-blue-600"
-								aria-label={`${config.rotateButton} ${pieceNumber}`}
-							>
-								<RotateCw className="h-5 w-5" />
-								<span className="text-xs font-bold">Piece {pieceNumber}</span>
-							</button>
-						);
-					})}
-				</div>
 			</div>
 		</div>
 	);

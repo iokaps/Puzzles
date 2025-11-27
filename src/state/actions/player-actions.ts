@@ -33,19 +33,49 @@ export const playerActions = {
 		if (!puzzle) return;
 
 		await kmClient.transact([playerStore], ([playerState]) => {
-			// Initialize pieces in a fixed row at the bottom
-			const spacing = puzzle.viewBox.width / (puzzle.pieces.length + 1);
-			const pieces: PuzzlePiece[] = puzzle.pieces.map((pieceDef, index) => ({
-				id: pieceDef.id,
-				x: spacing * (index + 1),
-				y: puzzle.viewBox.height - 80,
-				rotation: 0,
-				flipH: false,
-				flipV: false
-			}));
+			// Initialize pieces in a grid layout at the bottom
+			const gap = 15;
+			const padding = 15;
+			const maxWidth = puzzle.viewBox.width - padding * 2;
+
+			// Calculate layout
+			let currentX = 0;
+			let currentY = 0;
+			let currentRowHeight = 0;
+			const positions: { x: number; y: number }[] = [];
+
+			for (const pieceDef of puzzle.pieces) {
+				const w = pieceDef.width || 30;
+				const h = pieceDef.height || 30;
+
+				if (currentX + w > maxWidth) {
+					currentX = 0;
+					currentY += currentRowHeight + gap;
+					currentRowHeight = 0;
+				}
+
+				positions.push({ x: currentX, y: currentY });
+				currentRowHeight = Math.max(currentRowHeight, h);
+				currentX += w + gap;
+			}
+
+			const totalHeight = currentY + currentRowHeight;
+			const startY = puzzle.viewBox.height - totalHeight - padding;
+
+			const pieces: PuzzlePiece[] = puzzle.pieces.map((pieceDef, index) => {
+				const pos = positions[index];
+				return {
+					id: pieceDef.id,
+					x: pos.x + padding,
+					y: pos.y + startY,
+					rotation: 0,
+					color: pieceDef.color
+				};
+			});
 
 			playerState.puzzleState.pieces = pieces;
 			playerState.puzzleState.isComplete = false;
+			playerState.puzzleState.currentPuzzleId = puzzleId;
 		});
 	},
 
@@ -72,89 +102,34 @@ export const playerActions = {
 		});
 	},
 
-	async flipPiece(pieceId: string, axis: 'horizontal' | 'vertical') {
-		await kmClient.transact([playerStore], ([playerState]) => {
-			const piece = playerState.puzzleState.pieces.find(
-				(p) => p.id === pieceId
-			);
-			if (piece) {
-				if (axis === 'horizontal') {
-					piece.flipH = !piece.flipH;
-				} else {
-					piece.flipV = !piece.flipV;
-				}
-			}
-		});
-	},
-
 	validatePuzzle(puzzleId: string, pieces: PuzzlePiece[]): boolean {
-		return this.validatePuzzleWithDetails(puzzleId, pieces).isValid;
-	},
-
-	validatePuzzleWithDetails(
-		puzzleId: string,
-		pieces: PuzzlePiece[]
-	): { isValid: boolean; errors: Array<{ pieceId: string; message: string }> } {
 		const puzzle = getPuzzleById(puzzleId);
-		if (!puzzle)
-			return {
-				isValid: false,
-				errors: [{ pieceId: 'unknown', message: 'Puzzle not found' }]
-			};
+		if (!puzzle) return false;
 
-		const tolerance = 30; // pixels
-		const errors: Array<{ pieceId: string; message: string }> = [];
+		// Check if every solution piece has a matching player piece in the correct position
+		for (const solPiece of puzzle.pieces) {
+			// Find a piece in player's pieces that matches this solution piece
+			const match = pieces.find((p) => {
+				// Check position (snapped)
+				const x = Math.round(p.x / 30) * 30;
+				const y = Math.round(p.y / 30) * 30;
 
-		// Check if all pieces are in correct position
-		for (const piece of pieces) {
-			const pieceDef = puzzle.pieces.find((p) => p.id === piece.id);
-			if (!pieceDef) continue;
+				if (x !== solPiece.correctX || y !== solPiece.correctY) return false;
+				if (p.rotation !== solPiece.correctRotation) return false;
 
-			const xMatch = Math.abs(piece.x - pieceDef.correctX) <= tolerance;
-			const yMatch = Math.abs(piece.y - pieceDef.correctY) <= tolerance;
-			const rotationMatch = piece.rotation === pieceDef.correctRotation;
-			const flipHMatch = piece.flipH === pieceDef.correctFlipH;
-			const flipVMatch = piece.flipV === pieceDef.correctFlipV;
+				// Check if it's the "same" piece (by properties)
+				// We look up the definition of the player's piece to compare properties
+				const pDef = puzzle.pieces.find((def) => def.id === p.id);
+				if (!pDef) return false;
 
-			if (!xMatch || !yMatch || !rotationMatch || !flipHMatch || !flipVMatch) {
-				const issues: string[] = [];
+				// Compare shape and color
+				return pDef.path === solPiece.path && pDef.color === solPiece.color;
+			});
 
-				if (!rotationMatch) {
-					issues.push(
-						`rotate to ${pieceDef.correctRotation}° (currently ${piece.rotation}°)`
-					);
-				}
-				if (!xMatch || !yMatch) {
-					issues.push('move to correct position');
-				}
-
-				errors.push({
-					pieceId: piece.id,
-					message: issues.join(', ')
-				});
-
-				const xDiff = Math.abs(piece.x - pieceDef.correctX);
-				const yDiff = Math.abs(piece.y - pieceDef.correctY);
-				console.log(`❌ Piece ${piece.id} FAILED:`, {
-					position: {
-						current: `(${piece.x.toFixed(1)}, ${piece.y.toFixed(1)})`,
-						correct: `(${pieceDef.correctX}, ${pieceDef.correctY})`,
-						distance: `x: ${xDiff.toFixed(1)}px ${xMatch ? '✓' : `✗ (need ≤30)`}, y: ${yDiff.toFixed(1)}px ${yMatch ? '✓' : `✗ (need ≤30)`}`
-					},
-					rotation: `${piece.rotation}° ${rotationMatch ? '✓' : `✗ (need ${pieceDef.correctRotation}°)`}`,
-					flips: `H:${piece.flipH ? 'yes' : 'no'}${flipHMatch ? '✓' : '✗'} V:${piece.flipV ? 'yes' : 'no'}${flipVMatch ? '✓' : '✗'}`
-				});
-			}
+			if (!match) return false;
 		}
 
-		if (errors.length === 0) {
-			console.log(
-				'✅ Puzzle validation PASSED! All pieces correctly positioned.'
-			);
-			return { isValid: true, errors: [] };
-		}
-
-		return { isValid: false, errors };
+		return true;
 	},
 
 	async markPuzzleComplete() {

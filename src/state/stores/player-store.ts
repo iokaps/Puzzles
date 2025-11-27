@@ -5,8 +5,7 @@ export interface PuzzlePiece {
 	x: number; // position in SVG coordinates
 	y: number;
 	rotation: number; // degrees: 0, 90, 180, 270
-	flipH: boolean; // horizontal flip
-	flipV: boolean; // vertical flip
+	color?: string;
 }
 
 export interface PlayerState {
@@ -21,6 +20,7 @@ export interface PlayerState {
 	puzzleState: {
 		pieces: PuzzlePiece[];
 		isComplete: boolean;
+		currentPuzzleId?: string;
 	};
 }
 
@@ -29,7 +29,8 @@ const initialState: PlayerState = {
 	currentView: 'lobby',
 	puzzleState: {
 		pieces: [],
-		isComplete: false
+		isComplete: false,
+		currentPuzzleId: ''
 	}
 };
 
