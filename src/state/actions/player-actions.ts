@@ -106,27 +106,22 @@ export const playerActions = {
 		const puzzle = getPuzzleById(puzzleId);
 		if (!puzzle) return false;
 
-		// Check if every solution piece has a matching player piece in the correct position
-		for (const solPiece of puzzle.pieces) {
-			// Find a piece in player's pieces that matches this solution piece
-			const match = pieces.find((p) => {
-				// Check position (snapped)
-				const x = Math.round(p.x / 30) * 30;
-				const y = Math.round(p.y / 30) * 30;
+		// Check if every piece is in its correct position
+		// Rotation doesn't matter - just need pieces in the right place
+		for (const pieceDef of puzzle.pieces) {
+			// Find the player's piece with this ID
+			const playerPiece = pieces.find((p) => p.id === pieceDef.id);
+			if (!playerPiece) return false;
 
-				if (x !== solPiece.correctX || y !== solPiece.correctY) return false;
-				if (p.rotation !== solPiece.correctRotation) return false;
+			// Check position (snapped to grid)
+			const x = Math.round(playerPiece.x / 30) * 30;
+			const y = Math.round(playerPiece.y / 30) * 30;
 
-				// Check if it's the "same" piece (by properties)
-				// We look up the definition of the player's piece to compare properties
-				const pDef = puzzle.pieces.find((def) => def.id === p.id);
-				if (!pDef) return false;
+			if (x !== pieceDef.correctX || y !== pieceDef.correctY) {
+				return false;
+			}
 
-				// Compare shape and color
-				return pDef.path === solPiece.path && pDef.color === solPiece.color;
-			});
-
-			if (!match) return false;
+			// Rotation is ignored - players can rotate pieces however they want
 		}
 
 		return true;

@@ -6,7 +6,7 @@ import { generateLink } from '@/kit/generate-link';
 import { HostPresenterLayout } from '@/layouts/host-presenter';
 import { kmClient } from '@/services/km-client';
 import { globalActions } from '@/state/actions/global-actions';
-import { type Difficulty, globalStore } from '@/state/stores/global-store';
+import { globalStore } from '@/state/stores/global-store';
 import { cn } from '@/utils/cn';
 import { KmQrCode, KmTimeCountdown } from '@kokimoki/shared';
 import * as React from 'react';
@@ -32,8 +32,6 @@ const App: React.FC = () => {
 	const onlineClientIds = useSnapshot(globalStore.connections).clientIds;
 
 	const [selectedRounds, setSelectedRounds] = React.useState(3);
-	const [selectedDifficulty, setSelectedDifficulty] =
-		React.useState<Difficulty>('easy');
 
 	if (kmClient.clientContext.mode !== 'host') {
 		throw new Error('App host rendered in non-host mode');
@@ -49,7 +47,7 @@ const App: React.FC = () => {
 	});
 
 	const handleStartGame = () => {
-		globalActions.startGame(selectedRounds, selectedDifficulty);
+		globalActions.startGame(selectedRounds);
 	};
 
 	const handleStopGame = () => {
@@ -138,24 +136,6 @@ const App: React.FC = () => {
 								</select>
 							</div>
 
-							<div>
-								<label className="mb-2 block text-sm font-semibold">
-									{config.startingDifficulty}
-								</label>
-								<select
-									value={selectedDifficulty}
-									onChange={(e) =>
-										setSelectedDifficulty(e.target.value as Difficulty)
-									}
-									className="w-full rounded border border-gray-300 px-4 py-2"
-								>
-									<option value="easy">{config.easy}</option>
-									<option value="medium">{config.medium}</option>
-									<option value="hard">{config.hard}</option>
-									<option value="expert">{config.expert}</option>
-								</select>
-							</div>
-
 							<button
 								onClick={handleStartGame}
 								className="w-full rounded-lg bg-green-600 py-3 text-lg font-bold text-white hover:bg-green-700"
@@ -177,10 +157,6 @@ const App: React.FC = () => {
 								<div className="flex justify-between">
 									<span className="font-semibold">{config.phase}:</span>
 									<span className="capitalize">{gamePhase}</span>
-								</div>
-								<div className="flex justify-between">
-									<span className="font-semibold">{config.difficulty}:</span>
-									<span className="capitalize">{difficulty}</span>
 								</div>
 								{gamePhase === 'playing' && (
 									<div className="flex justify-between">

@@ -1,11 +1,10 @@
 import { getPuzzleByDifficulty } from '@/assets/puzzles';
 import { kmClient } from '@/services/km-client';
-import type { Difficulty } from '../stores/global-store';
 import { globalStore } from '../stores/global-store';
 
 export const globalActions = {
-	async startGame(totalRounds: number = 3, difficulty: Difficulty = 'easy') {
-		const puzzle = getPuzzleByDifficulty(difficulty, []);
+	async startGame(totalRounds: number = 3) {
+		const puzzle = getPuzzleByDifficulty([]);
 		await kmClient.transact([globalStore], ([globalState]) => {
 			globalState.started = true;
 			globalState.startTimestamp = kmClient.serverTimestamp();
@@ -13,7 +12,7 @@ export const globalActions = {
 			globalState.currentRound = 1;
 			globalState.totalRounds = totalRounds;
 			globalState.roundStartTime = kmClient.serverTimestamp();
-			globalState.difficulty = difficulty;
+			globalState.difficulty = 'hard';
 			globalState.puzzleId = puzzle.id;
 			globalState.usedPuzzleIds = [puzzle.id];
 
@@ -26,15 +25,12 @@ export const globalActions = {
 		});
 	},
 
-	async startRound(difficulty: Difficulty) {
-		const puzzle = getPuzzleByDifficulty(
-			difficulty,
-			globalStore.proxy.usedPuzzleIds
-		);
+	async startRound() {
+		const puzzle = getPuzzleByDifficulty(globalStore.proxy.usedPuzzleIds);
 		await kmClient.transact([globalStore], ([globalState]) => {
 			globalState.gamePhase = 'playing';
 			globalState.roundStartTime = kmClient.serverTimestamp();
-			globalState.difficulty = difficulty;
+			globalState.difficulty = 'hard';
 			globalState.puzzleId = puzzle.id;
 			globalState.usedPuzzleIds.push(puzzle.id);
 
@@ -77,18 +73,12 @@ export const globalActions = {
 				globalState.gamePhase = 'finalResults';
 				globalState.started = false;
 			} else {
-				// Start next round with random difficulty
-				const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
-				const randomDifficulty =
-					difficulties[Math.floor(Math.random() * difficulties.length)];
-				const puzzle = getPuzzleByDifficulty(
-					randomDifficulty,
-					globalState.usedPuzzleIds
-				);
+				// Start next round with random puzzle
+				const puzzle = getPuzzleByDifficulty(globalState.usedPuzzleIds);
 
 				globalState.gamePhase = 'playing';
 				globalState.roundStartTime = kmClient.serverTimestamp();
-				globalState.difficulty = randomDifficulty;
+				globalState.difficulty = 'hard';
 				globalState.puzzleId = puzzle.id;
 				globalState.usedPuzzleIds.push(puzzle.id);
 

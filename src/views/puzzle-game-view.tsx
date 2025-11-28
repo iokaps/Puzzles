@@ -247,6 +247,13 @@ export const PuzzleGameView: React.FC = () => {
 									: piece.y;
 							const transform = `translate(${displayX}, ${displayY}) rotate(${piece.rotation})`;
 							const pieceNumber = index + 1;
+
+							// Calculate center of piece for label positioning
+							const pieceWidth = pieceDef.width || 30;
+							const pieceHeight = pieceDef.height || 30;
+							const centerX = pieceWidth / 2;
+							const centerY = pieceHeight / 2;
+
 							return (
 								<g
 									key={piece.id}
@@ -281,8 +288,8 @@ export const PuzzleGameView: React.FC = () => {
 									/>
 
 									<text
-										x={15}
-										y={20}
+										x={centerX}
+										y={centerY + 6}
 										fill="white"
 										fontSize="16"
 										fontWeight="bold"
@@ -294,19 +301,6 @@ export const PuzzleGameView: React.FC = () => {
 										}}
 									>
 										{pieceNumber}
-									</text>
-									{/* Rotation indicator */}
-									<text
-										x={15}
-										y={35}
-										fill="rgba(255,255,255,0.8)"
-										fontSize="10"
-										fontWeight="normal"
-										textAnchor="middle"
-										pointerEvents="none"
-										style={{ userSelect: 'none' }}
-									>
-										{piece.rotation}°
 									</text>
 								</g>
 							);

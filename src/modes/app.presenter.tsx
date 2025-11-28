@@ -25,7 +25,6 @@ const App: React.FC = () => {
 		totalRounds,
 		roundStartTime,
 		roundDuration,
-		difficulty,
 		players
 	} = useSnapshot(globalStore.proxy);
 
@@ -86,16 +85,11 @@ const App: React.FC = () => {
 								<h2 className="mb-4 text-4xl font-bold">
 									{config.round} {currentRound} {config.of} {totalRounds}
 								</h2>
-								<div className="mb-2 text-2xl font-semibold">
-									{config.difficulty}:{' '}
-									<span className="capitalize">{difficulty}</span>
-								</div>
 								<div className="font-mono text-6xl font-bold text-blue-600">
 									<KmTimeCountdown ms={remainingTime} />
 								</div>
 							</div>
-						</div>
-
+						</div>{' '}
 						<div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
 							<h3 className="mb-4 text-2xl font-bold">{config.leaderboard}</h3>
 							<div className="overflow-auto">
